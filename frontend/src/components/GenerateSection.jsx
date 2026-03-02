@@ -19,7 +19,7 @@ function GenerateSection({ onGenerateSuccess }) {
 
     try {
       const res = await axios.post(
-        `http://localhost:8000/generate?num_numbers=${count}`,
+        `https://external-sort-api-pl2y.onrender.com/generate?num_numbers=${count}`,
       );
       setStatus(`${res.data.message} — ${res.data.num_numbers} Numbers Ready.`);
       onGenerateSuccess(res.data);

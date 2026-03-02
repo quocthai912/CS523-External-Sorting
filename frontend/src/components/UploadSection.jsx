@@ -23,7 +23,10 @@ function UploadSection({ onUploadSuccess }) {
     formData.append("file", file);
 
     try {
-      const res = await axios.post("http://localhost:8000/upload", formData);
+      const res = await axios.post(
+        "https://external-sort-api-pl2y.onrender.com/upload",
+        formData,
+      );
       setStatus(`${res.data.total_numbers} Numbers Detected.`);
       onUploadSuccess(res.data);
     } catch {
