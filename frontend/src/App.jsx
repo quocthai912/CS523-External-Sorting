@@ -178,7 +178,7 @@ function App() {
   useEffect(() => {
     const checkServer = async () => {
       try {
-        await axios.get("http://localhost:8000/");
+        await axios.get("https://external-sort-api-pl2y.onrender.com/");
         setServerOnline(true);
       } catch {
         setServerOnline(false);
@@ -220,7 +220,7 @@ function App() {
       if (mode === "visualize") {
         // Chế độ Visualize
         const res = await axios.post(
-          `http://localhost:8000/sort?chunk_size=${chunkSize}`,
+          `https://external-sort-api-pl2y.onrender.com/sort?chunk_size=${chunkSize}`,
         );
         const elapsed = ((Date.now() - start) / 1000).toFixed(2);
         setTrace(res.data.trace);
@@ -235,7 +235,7 @@ function App() {
       } else {
         // Chế độ Sort Only
         const res = await axios.post(
-          `http://localhost:8000/sort-only?chunk_size=${chunkSize}`,
+          `https://external-sort-api-pl2y.onrender.com/sort-only?chunk_size=${chunkSize}`,
         );
         const elapsed = ((Date.now() - start) / 1000).toFixed(2);
         setTrace(null);
@@ -256,9 +256,12 @@ function App() {
 
   const handleDownload = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/download", {
-        responseType: "blob",
-      });
+      const res = await axios.get(
+        "https://external-sort-api-pl2y.onrender.com/download",
+        {
+          responseType: "blob",
+        },
+      );
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement("a");
       link.href = url;
@@ -273,7 +276,7 @@ function App() {
 
   const handleCleanup = async () => {
     try {
-      await axios.post("http://localhost:8000/cleanup");
+      await axios.post("https://external-sort-api-pl2y.onrender.com/cleanup");
       setCleaned(true);
       setStatus("Temporary Run Files Deleted Successfully.");
     } catch {
