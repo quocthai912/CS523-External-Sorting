@@ -1,11 +1,18 @@
+# File được xây dựng để kiểm tra External Sort trên File có kích thước lớn trước khi xây dựng giao diện (Frontend)
 import struct
 import os
 
 DOUBLE_SIZE = 8
 
 
-# Hàm được dùng để đọc toàn bộ số trong từng File Input và Output
 def read_all(filepath: str) -> list[float]:
+    """
+    Hàm được dùng để đọc toàn bộ số thực trong File.
+    Args:
+        filepath (str): Nhận đường dẫn tới File cần đọc.
+    Returns:
+        list[float]: Danh sách các số thực đã được đọc thành công.
+    """
     numbers = []
     with open(filepath, "rb") as f:
         while True:

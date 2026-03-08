@@ -7,9 +7,15 @@ DOUBLE_SIZE = 8
 
 def read_chunk(file, chunk_size: int) -> list[float]:
     """
-    Đọc tối đa chunk_size số từ file nhị phân
-    Trả về 1 danh sách (list) các số thực (float/double)
+    Đọc tối đa chunk_size số từ File nhị phân.
+    Args:
+        file (BinaryI0): File đang được mở ở chế độ đọc nhị phân.
+        chunk_size (int): Số lượng phần tử cần đọc.
+    Returns:
+        list[float]: Trả về danh sách số thực đọc được.
+                     Trả về list rỗng nếu hết File.
     """
+    # Khởi tạo list rỗng
     numbers = []
     for _ in range(chunk_size):
         # Đọc lần lượt từng số
@@ -19,14 +25,16 @@ def read_chunk(file, chunk_size: int) -> list[float]:
             break
         # Chuyển đổi dữ liệu nhị phân trở lại số ban đầu
         number = struct.unpack("d", raw)[0]
+        # Thêm số vào list
         numbers.append(number)
     return numbers
 
 
 class StateTracker:
     """
-    Ghi lại toàn bộ các bước của thuật toán External Sort
-    Mỗi bước, ta xem như một sự kiện của thuật toán và lưu vào danh sách sự kiện (events)
+    Ghi lại toàn bộ các bước của thuật toán External Sort.
+    Mỗi bước, ta xem như một sự kiện của thuật toán và lưu vào danh sách sự kiện (events),
+    sau đó xuất ra trace data để Frontend render animation.
     """
 
     # Constructor
@@ -36,10 +44,13 @@ class StateTracker:
 
     def log(self, event_type: str, description: str, data: dict = {}):
         """
-        Hàm được dùng để ghi 1 sự kiện vào danh sách
-        event_type: Loại sự kiện (Load, Sort, Merge, Write)
-        description: mô tả sự kiện
-        data: dữ liệu kèm theo
+        Hàm log được dùng để ghi một sự kiện vào danh sách events.
+        Args:
+            event_type (str): Kiểu sự kiện.
+            description (str): Mô tả sự kiện.
+            data (dict): Dữ liệu kèm theo để trả cho Frontend render animation.
+        Returns:
+            Hàm này không có giá trị trả về.
         """
         # Mỗi khi một sự kiện xảy ra, ta tăng 1 bước
         self.step += 1
@@ -55,7 +66,13 @@ class StateTracker:
         print(f"Bước {self.step} [{event_type}]: {description}")
 
     def get_trace(self) -> dict:
-        """Trả về toàn bộ trace để xuất ra file JSON"""
+        """
+        Trả về toàn bộ trace để xuất ra file JSON, sử dụng file này để trao đổi giữa Backend-Frontend.
+        Args:
+            Hàm này không nhận tham số đầu vào.
+        Returns:
+            dict: Tổng số bước và danh sách toàn bộ các sự kiện.
+        """
         return {
             # Tổng số bước chạy
             "total_steps": self.step,
@@ -69,12 +86,18 @@ def create_runs(
 ) -> list[str]:
     """
     Giai đoạn 1: Đọc file input đầu vào và chia thành các chunk nhỏ,
-    Sort từng chunk bằng Internal Sort và lưu ra các File tạm gọi là Run
-    Trả về danh sách đường dẫn các file run.
+    Sort từng chunk bằng Internal Sort và lưu ra các File tạm gọi là Run.
+    Args:
+        input_path (str): Đường dẫn File input đầu vào.
+        run_dir (str): Đường dẫn tới thư mục chứa các File run tạm.
+        chunk_size (int): Kích thước cố định của từng Chunk.
+        tracker (StateTracker): Dùng để ghi lại từng bước của giai đoạn 1.
+    Returns:
+        list[str]: Danh sách đường dẫn tới các File run tạm.
     """
     # Tạo thư mục chứa các file run (Chunk đã sắp xếp)
     os.makedirs(run_dir, exist_ok=True)
-    # Danh sách chứa đường dẫn các file run
+    # Danh sách chứa đường dẫn tới các file run tạm
     run_files = []
     # Chỉ số Index của run
     run_index = 0
@@ -137,6 +160,12 @@ def merge_runs(run_files: list[str], output_path: str, tracker: StateTracker):
     """
     Giai đoạn 2: Merge tất cả các Run đã sort thành 1 file kết quả.
     Log chi tiết từng bước để Frontend visualization.
+    Args:
+        run_files (list[str]): Đường dẫn tới thư mục chứa các File run tạm.
+        output_path (str): Đường dẫn tới File output kết quả.
+        tracker (StateTracker): Dùng để ghi lại từng bước của giai đoạn 2.
+    Returns:
+        Hàm này không có giá trị trả về.
     """
     import heapq
 
@@ -168,7 +197,7 @@ def merge_runs(run_files: list[str], output_path: str, tracker: StateTracker):
     # Khởi tạo heap: (số, index_run)
     heap = []
     run_pointers = [0] * len(run_files)  # Con trỏ vị trí trong mỗi run
-
+    # Lưu số đầu tiên của mỗi run vào Heap
     for i, fh in enumerate(file_handles):
         raw = fh.read(DOUBLE_SIZE)
         if raw:
@@ -187,15 +216,16 @@ def merge_runs(run_files: list[str], output_path: str, tracker: StateTracker):
 
     output = []
     while heap:
+        # Lấy số nhỏ nhất từ Min-Heap và ghi vào File kết quả
         smallest, run_idx = heapq.heappop(heap)
         output.append(smallest)
         run_pointers[run_idx] += 1
-
+        # Lấy số tiếp theo từ chính Run vừa có số được ghi vào File Output
         raw = file_handles[run_idx].read(DOUBLE_SIZE)
         if raw:
             next_num = struct.unpack("d", raw)[0]
             heapq.heappush(heap, (next_num, run_idx))
-
+        # Ghi lại sự kiện
         tracker.log(
             "MERGE",
             f"Get {smallest:.2f} From Run {run_idx + 1} → Output",
@@ -216,7 +246,7 @@ def merge_runs(run_files: list[str], output_path: str, tracker: StateTracker):
 
     for fh in file_handles:
         fh.close()
-
+    # Kết thúc giai đoạn 2, trộn hoàn tất
     tracker.log(
         "END_PHASE2",
         f"Phase 2 Complete — {len(output)} Numbers Merged",
@@ -230,6 +260,12 @@ import json
 def external_sort(input_path: str, output_path: str, chunk_size: int = 10) -> dict:
     """
     Hàm chính: Chạy toàn bộ thuật toán External Sort.
+    Args:
+        input_path (str): Đường dẫn tới File Input đầu vào.
+        output_path (str): Đường dẫn tới File Output đầu ra.
+        chunk_size (int): Kích thước cố định của từng Chunk.
+    Returns:
+        dict: Trả về trace_data gồm tổng số bước và danh sách events để Frontend render animation.
     """
     tracker = StateTracker()
     run_dir = os.path.join(os.path.dirname(input_path), "runs")
@@ -240,7 +276,7 @@ def external_sort(input_path: str, output_path: str, chunk_size: int = 10) -> di
     # Giai đoạn 2
     merge_runs(run_files, output_path, tracker)
 
-    # Đọc toàn bộ output để hiển thị kết quả
+    # Đọc toàn bộ output để hiển thị kết quả sau khi sắp xếp
     final_output = []
     with open(output_path, "rb") as f:
         while True:
@@ -260,7 +296,13 @@ def external_sort(input_path: str, output_path: str, chunk_size: int = 10) -> di
 
 def external_sort_only(input_path: str, output_path: str, chunk_size: int = 10) -> dict:
     """
-    Hàm được sử dụng để sort các File lớn, không minh họa thuật toán bằng Animation
+    Hàm được sử dụng để sort các File lớn, không tạo trace_data, không minh họa thuật toán bằng Animation.
+    Args:
+        input_path (str): Đường dẫn tới File Input đầu vào.
+        output_path (str): Đường dẫn tới File Output đầu ra.
+        chunk_size (int): Kích thước cố định của từng Chunk.
+    Returns:
+        dict: Gồm total_run: tổng số run đã tạo, total_written: số phần tử đã ghi vào output, elapsed: thời gian thực thi.
     """
     tracker = StateTracker()
     run_dir = os.path.join(os.path.dirname(input_path), "runs")
@@ -318,6 +360,7 @@ def external_sort_only(input_path: str, output_path: str, chunk_size: int = 10) 
 
 
 if __name__ == "__main__":
+    # Hàm main được xây dựng để kiểm thử thuật toán trước khi tiến hành xây dựng giao diện (Frontend)
     base = os.path.dirname(__file__)
     input_path = os.path.join(base, "..", "data", "input.bin")
     output_path = os.path.join(base, "..", "data", "output.bin")

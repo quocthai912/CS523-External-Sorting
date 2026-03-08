@@ -25,7 +25,12 @@ os.makedirs(DATA_DIR, exist_ok=True)
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
     """
-    Nhận file .bin từ Frontend và lưu vào thư mục data.
+    Nơi xử lí Request Upload File.
+    Nhận File .bin từ Frontend và lưu vào thư mục data.
+    Args:
+        file (UploadFile): File nhị phân được upload từ phía Frontend.
+    Returns:
+        dict: Tên File, kích thước File và tổng số phần tử.
     """
     # Chỉ cho phép file .bin
     if not file.filename.endswith(".bin"):
@@ -59,8 +64,12 @@ from external_sort import external_sort, external_sort_only
 @app.post("/sort")
 async def sort_file(chunk_size: int = 10):
     """
-    Chạy thuật toán External Sort trên file input.bin.
-    Trả về trace.json để Frontend làm animation.
+    Nơi xử lí Request khi người dùng bấm sort có visualize.
+    Hàm sẽ tiến hành gọi và chạy thuật toán External Sort trên File input.bin.
+    Args:
+        chunk_size (int): Kích thước cố định của mỗi Chunk.
+    Returns:
+        dict: Tổng số bước và toàn bộ trace data được lưu dưới dạng File JSON để trả kết quả về Frontend render animation.
     """
     input_path = os.path.join(DATA_DIR, "input.bin")
     output_path = os.path.join(DATA_DIR, "output.bin")
@@ -90,7 +99,12 @@ async def sort_file(chunk_size: int = 10):
 @app.post("/sort-only")
 async def sort_file_only(chunk_size: int = 10):
     """
-    Chế độ Sort Only — Được sử dụng để sắp xếp các File có kích thước lớn
+    Nơi nhận Request nếu File nhị phân có kích thước quá lớn hoặc người dùng thực hiện chế độ Sort Only.
+    Chế độ Sort Only — Được sử dụng để sắp xếp các File có kích thước lớn.
+    Args:
+        chunk_size (int): Kích thước cố định của mỗi Chunk.
+    Returns:
+        dict: Gồm total_run: tổng số run đã tạo, total_written: số phần tử đã ghi vào output, elapsed: thời gian thực thi.
     """
     import time
 
@@ -118,7 +132,12 @@ async def sort_file_only(chunk_size: int = 10):
 @app.post("/cleanup")
 async def cleanup_runs():
     """
-    Xóa các file run tạm sau khi người dùng xác nhận.
+    Nơi nhận Request khi người dùng xóa các File run tạm.
+    Hàm sẽ xóa các File run tạm sau khi người dùng nhấn xác nhận.
+    Args:
+        Hàm không nhận tham số đầu vào.
+    Returns:
+        Backend sẽ trả về message thông báo đã xóa thành công.
     """
     import glob
 
@@ -139,7 +158,12 @@ from fastapi.responses import FileResponse
 @app.get("/download")
 async def download_file():
     """
-    Tải file output.bin đã sort về máy.
+    Nơi nhận Request khi người dùng muốn download File output về máy.
+    Args:
+        Hàm không nhận tham số đầu vào.
+    Returns:
+        Trả về 1 Response bao gồm đường dẫn tới File output và tên File cho Frontend,
+        sau đó, File sẽ tự động được tải về máy của người dùng.
     """
     output_path = os.path.join(DATA_DIR, "output.bin")
 
@@ -162,7 +186,13 @@ import random
 @app.post("/generate")
 async def generate_file(num_numbers: int = 100):
     """
-    Tự sinh file nhị phân chứa số thực ngẫu nhiên.
+    Nơi nhận Request khi người dùng muốn sử dụng chức năng generate File.
+    Hàm sẽ tự sinh File nhị phân chứa các số thực ngẫu nhiên.
+    Cấu trúc hàm được xây dựng dựa trên File generate_data.py trước đó.
+    Args:
+        num_numbers (int): Số lượng số được tạo ra.
+    Returns:
+        Trả về thông báo đã tạo thành công, cùng với số lượng số và kích thước của File.
     """
     if num_numbers < 10 or num_numbers > 1000:
         return JSONResponse(
@@ -190,4 +220,13 @@ async def generate_file(num_numbers: int = 100):
 @app.get("/")
 @app.head("/")
 def root():
+    """
+    Các phương thức HTTP được sử dụng: GET, POST và HEAD.
+    Được dùng để kiểm tra phía máy chủ (Server) có đang hoạt động không.
+    Phương thức HEAD được dùng để UptimeRobot gửi request thành công và kích hoạt Server chạy 24/7.
+    Args:
+        Hàm này không nhận tham số đầu vào.
+    Returns:
+        Trả về message cho biết Server đang hoạt động.
+    """
     return {"message": "External Sort API đang chạy"}

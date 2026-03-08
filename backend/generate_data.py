@@ -5,8 +5,12 @@ import os
 
 def generate_binary_file(filename: str, num_numbers: int = 200):
     """Tạo File nhị phân chứa các số thực (double 8-bytes) ngẫu nhiên.
-    filename: tên file được tạo ra ("input.bin")
-    num_numbers: số lượng số cần tạo"""
+    Args:
+        filename (str): Tên file được tạo ra ("input.bin").
+        num_numbers (int): Số lượng số cần tạo.
+    Returns:
+        Hàm này không có giá trị trả về.
+    """
 
     filepath = os.path.join(os.path.dirname(__file__), "..", "data", filename)
 
