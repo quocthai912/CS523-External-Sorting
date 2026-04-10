@@ -1,0 +1,14 @@
+name: Keep App Alive
+
+on:
+  schedule:
+    # Chạy tự động mỗi 10 phút một lần
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render App
+        run: curl -s https://external-sort-api-pl2y.onrender.com/
