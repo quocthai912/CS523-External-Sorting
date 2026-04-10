@@ -7,6 +7,9 @@
 <h1 align="center">CS523 - CẤU TRÚC DỮ LIỆU VÀ GIẢI THUẬT NÂNG CAO</h1>
 
 # EXTERNAL SORT VISUALIZER
+![React](https://img.shields.io/badge/Frontend-ReactJS-61DAFB?style=flat-square&logo=react)
+![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=flat-square&logo=fastapi)
+![Python](https://img.shields.io/badge/Language-Python_3.x-3776AB?style=flat-square&logo=python)
 > Xây dựng ứng dụng Web trực quan hóa thuật toán Sắp xếp ngoại **(External Sort)** sử dụng phương pháp trộn nhiều đường cân bằng **(Balanced Multiway Merge Sort)** trên File nhị phân chứa các số thực có kích thước 8 Bytes.
 
 LINK DEMO: https://cs-523-assignment1-external-sorting.vercel.app/
